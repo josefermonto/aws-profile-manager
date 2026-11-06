@@ -20,6 +20,7 @@ async function main() {
     const ctx = createContext({ port: PORT });
     await ensureDir(ctx.paths.appHome);
     await ctx.shell.writeScript();
+    await ctx.claude.ensure().catch((error) => console.error(`Claude sync: ${error.message}`));
 
     const dist = path.resolve(__dirname, '..', 'frontend', 'dist');
     const staticDir = !DEV && fs.existsSync(path.join(dist, 'index.html')) ? dist : null;

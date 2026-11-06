@@ -84,7 +84,8 @@ async function handleApi(req, res, operations, log) {
         sendJson(res, 400, { error: 'Unknown operation.' });
         return;
     }
-    if (operation !== 'getState' && operation !== 'pollSignIn') log.info(`operation=${operation}`);
+    // Not logged: the UI's polling, and the Claude hook, which runs before every command Claude runs.
+    if (!['getState', 'pollSignIn', 'claudeHook'].includes(operation)) log.info(`operation=${operation}`);
     try {
         sendJson(res, 200, (await operations[operation](body.payload ?? {})) ?? {});
     } catch (error) {

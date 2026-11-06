@@ -63,6 +63,7 @@ function createState(ctx) {
             summary: summarise(profiles.map((p) => p.status)),
             paths: { config: ctx.paths.config, credentials: ctx.paths.credentials, appHome: ctx.paths.appHome, backups: ctx.paths.backups },
             shell: await ctx.shell.status(),
+            claude: await ctx.claude.status(),
             port: ctx.port,
         };
     }

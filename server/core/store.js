@@ -15,7 +15,7 @@ const STORE_VERSION = 2;
 function emptyStore() {
     return {
         version: STORE_VERSION,
-        settings: { warnMinutes: 15, notifications: true },
+        settings: { warnMinutes: 15, notifications: true, claudeSync: false },
         learnedKeyLifetimes: {},
         projects: [],
         // accountId → { name, label, color }: shared by every profile in that AWS account.
@@ -33,7 +33,8 @@ function normalise(data) {
         settings: { ...base.settings, ...(data?.settings ?? {}) },
         // How long pasted keys lasted, per account and role, learned when they expired (creds/expiry.js).
         learnedKeyLifetimes: data?.learnedKeyLifetimes ?? {},
-        projects: data?.projects ?? [],
+        // folders: where the project's repos live, for Claude (server/claude).
+        projects: (data?.projects ?? []).map((p) => ({ folders: [], ...p })),
         accounts: data?.accounts ?? {},
         portals: data?.portals ?? [],
         profiles: data?.profiles ?? [],

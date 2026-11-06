@@ -15,6 +15,8 @@ function tempEnv() {
         PROFILE_MANAGER_HOME: path.join(dir, 'home'),
         PROFILE_MANAGER_SSO_CACHE: path.join(dir, 'aws', 'sso', 'cache'),
         PROFILE_MANAGER_ZSHRC: path.join(dir, 'zshrc'),
+        PROFILE_MANAGER_CLAUDE_DIR: path.join(dir, 'claude'),
+        PROFILE_MANAGER_HOME_DIR: path.join(dir, 'me'),
     };
     return {
         dir,

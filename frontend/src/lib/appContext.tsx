@@ -11,6 +11,7 @@ export type Dialog =
   | { kind: 'settings' }
   | { kind: 'move'; profileId: string }
   | { kind: 'next'; projectId: string }
+  | { kind: 'folders'; projectId: string }
   | {
       kind: 'confirm';
       title: string;

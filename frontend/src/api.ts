@@ -35,6 +35,7 @@ export const api = {
   getState: () => call<AppState>('getState'),
   createProject: (name: string) => call<{ id: string }>('createProject', { name }),
   updateProject: (id: string, name: string) => call('updateProject', { id, name }),
+  setProjectFolders: (id: string, folders: string[]) => call('updateProject', { id, folders }),
   deleteProject: (id: string, deleteFromFiles: boolean) => call<{ profiles: number; portals: number }>('deleteProject', { id, deleteFromFiles }),
   updateAccount: (p: { accountId: string; label?: string; color?: LabelColor | null }) => call('updateAccount', p),
   updateSettings: (p: { warnMinutes?: number; notifications?: boolean }) => call('updateSettings', p),
@@ -64,6 +65,7 @@ export const api = {
 
   installShell: () => call('installShell'),
   testNotification: () => call<{ shown: boolean; unsupported: boolean }>('testNotification'),
+  setClaudeSync: (on: boolean) => call<AppState['claude']>('setClaudeSync', { on }),
 };
 
 export const errorMessage = (error: unknown) => (error instanceof Error ? error.message : 'Something went wrong.');

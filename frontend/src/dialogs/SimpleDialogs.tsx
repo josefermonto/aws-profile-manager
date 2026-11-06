@@ -1,5 +1,5 @@
 import { useState, type ReactNode } from 'react';
-import { ChevronRight, ClipboardPaste, KeyRound, Loader2 } from 'lucide-react';
+import { ChevronRight, ClipboardPaste, Folder, KeyRound, Loader2, Plus, X } from 'lucide-react';
 import { api } from '../api';
 import { useApp, type Dialog } from '../lib/appContext';
 import { ErrorText, Hint, Modal, ProjectSelect } from '../components/ui';
@@ -138,6 +138,75 @@ export function MoveDialog({ profileId }: { profileId: string }) {
       <label className="field-label" htmlFor="move-project">To project</label>
       <ProjectSelect id="move-project" value={projectId} onChange={setProjectId} />
       <Hint>Only changes where it's listed here. The profile in ~/.aws stays exactly the same.</Hint>
+      <ErrorText>{error}</ErrorText>
+    </Modal>
+  );
+}
+
+/**
+ * The folders a project's repos live in. Claude Code, working in one of them
+ * (or a folder below), sees this project's profiles, and only those.
+ */
+export function FoldersDialog({ projectId }: { projectId: string }) {
+  const { state, close, toast } = useApp();
+  const project = state.projects.find(p => p.id === projectId);
+  const [folders, setFolders] = useState<string[]>(project?.folders ?? []);
+  const [draft, setDraft] = useState('');
+  const { busy, error, submit } = useSubmit();
+  if (!project) return null;
+  const elsewhere = (folder: string) => state.projects.find(p => p.id !== projectId && p.folders.includes(folder))?.name;
+  const add = () => {
+    const folder = draft.trim().replace(/(.)\/+$/, '$1');
+    if (folder && !folders.includes(folder)) setFolders([...folders, folder]);
+    setDraft('');
+  };
+  const save = async () => {
+    const pending = draft.trim() ? [...folders, draft.trim()] : folders;
+    if ((await submit(() => api.setProjectFolders(projectId, pending))) !== undefined) {
+      toast('Folders saved.');
+      close();
+    }
+  };
+  return (
+    <Modal
+      title={`Folders for ${project.name}`}
+      onClose={close}
+      footer={<><button className="btn" onClick={close}>Cancel</button><button className="btn-primary" disabled={busy} onClick={() => void save()}>Save</button></>}
+    >
+      <p className="mb-3 text-sm text-muted">
+        Where {project.name}'s repos live. Claude Code working in one of these folders, or a folder inside them, sees {project.name}'s profiles, and only those.
+      </p>
+      {folders.length > 0 && (
+        <ul className="mb-3 space-y-1.5">
+          {folders.map(f => (
+            <li key={f} className="flex items-center gap-2 rounded-md border border-border bg-surface-alt px-3 py-1.5">
+              <Folder size={13} className="shrink-0 text-muted" />
+              <code className="min-w-0 flex-1 truncate font-mono text-xs text-text">{f}</code>
+              {elsewhere(f) && <span className="text-[0.6875rem] text-warning">moves from {elsewhere(f)}</span>}
+              <button className="btn-ghost p-1" title="Remove" onClick={() => setFolders(folders.filter(x => x !== f))}><X size={13} /></button>
+            </li>
+          ))}
+        </ul>
+      )}
+      <label className="field-label" htmlFor="folder-new">Add a folder</label>
+      <div className="flex gap-2">
+        <input
+          id="folder-new"
+          autoFocus
+          value={draft}
+          onChange={e => setDraft(e.target.value)}
+          onKeyDown={e => e.key === 'Enter' && add()}
+          className="field font-mono text-xs"
+          placeholder="~/repos/acme-*"
+          spellCheck={false}
+        />
+        <button className="btn" disabled={!draft.trim()} onClick={add}><Plus size={13} /> Add</button>
+      </div>
+      <Hint>
+        A full path. <code className="font-mono">*</code> matches part of a folder name: <code className="font-mono">~/repos/acme-*</code> covers ~/repos/acme-api and
+        ~/repos/acme-web. Claude can also link a repo itself, after asking you which project it belongs to.
+      </Hint>
+      {!state.claude.sync && <Hint>Sync with Claude is off; turn it on in the top bar.</Hint>}
       <ErrorText>{error}</ErrorText>
     </Modal>
   );

@@ -50,6 +50,9 @@ Repo layout: npm workspaces `server/` (CommonJS, Jest) and `frontend/` (React 18
 | `status/watcher.js` | Every 30 s: refresh SSO tokens, renew plain keys, probe pasted keys, fire notifications, write `profiles.tsv`. |
 | `status/notifier.js` | macOS alerts: an `osascript` dialog with the fix (*Sign in again* / *Paste new keys*) and *Ignore*; the action opens the app at that dialog (`#sign-in=<portal>`, `#paste=<profile>`). |
 | `shell/shellHelper.js` | Generates `awspm.zsh`; adds one `source` line to `~/.zshrc` only when asked. |
+| `claude/claude.js` | Sync with Claude: installs/removes the skill, the launcher and its `~/.claude/settings.json` entries; answers `context`, `link` and `hook`. |
+| `claude/policy.js` | Pure: a shell command + profile facts → deny / ask / no opinion. |
+| `claude/cli.js` | `awspm-claude context | link | hook`, run by Claude Code; asks the service over HTTP. |
 | `service.js` | `install` / `uninstall` / `status` for the launchd agent `local.aws-profile-manager`. |
 | `http/app.js` | Loopback-only server: checks remote address, `Host`, `Origin`, JSON body; serves `frontend/dist` with a strict CSP. |
 
@@ -145,6 +148,14 @@ One page, no navigation:
 - **Add SSO accounts:** after signing in, every account is pre-ticked with every role it offers; label and color per account (guessed, editable); role toggles at the top apply to every account; the profile names to be created are shown; one region and "also write plain keys" for the batch.
 - **New project** is followed by "How do you want to add its profiles?" (Sign in with SSO / Paste keys / Later).
 - **Deleting** a project deletes its profiles and (when removing from files) its own portals that nothing else uses. The confirmation lists the profiles and offers "Also remove them from ~/.aws" (default on, backed up first); off, they stay in the files as unmanaged.
+
+## Claude Code
+
+The toggle in the top bar (`settings.claudeSync`). Claude never gets a copy of the profile list: it asks the service, so additions, removals and expiries reach it at once.
+
+- **On** writes `~/.aws-profile-manager/bin/awspm-claude` (a launcher for `server/claude/cli.js` with the service's Node path), the skill `~/.claude/skills/aws-profiles/SKILL.md`, and in `~/.claude/settings.json` a `PreToolUse` hook (`matcher: Bash`, `awspm-claude hook`, 10 s timeout) plus the allow rule `Bash(<launcher> context *)`. `settings.json` is backed up first and only these entries change; an invalid file, or an `aws-profiles` skill the app didn't write, is left alone with an error. **Off** removes exactly them. On every start the launcher and skill are rewritten (Node or repo may have moved); `settings.json` is not.
+- **Folders:** `project.folders` (`~/…` or absolute; `*` within one folder name; the most specific match wins; a folder belongs to one project). `context` lists only the matching project's profiles; in an unlinked folder it lists project names and tells Claude to ask, then `awspm-claude link "<project>"` links the repo root.
+- **Hook verdicts** (`policy.js`), per simple command in a chain: *deny* reading `~/.aws/credentials` or `~/.aws/sso/cache`; credentials printed to the screen (`sts get-session-token`/`assume-role*`/`get-federation-token`, `sso get-role-credentials`, `ecr get-login-password`, `configure export-credentials`, `configure get` of a secret; fine when piped); `aws configure set/import/sso`; an AWS call with no `--profile`/`AWS_PROFILE` (local commands like `cdk synth`, `sam build`, `--version` excepted); a managed profile that's expired, signed out or rejected (with the fix link). *Ask* for a change (anything but describe/list/get-style reads; `s3 cp` to S3; `cdk deploy`; `terraform apply`…) in an account whose label is Prod, and for a profile of another project than the folder's. Otherwise no opinion: Claude's normal permissions apply. With the service down, only the stateless checks run; a failing hook never blocks Claude.
 
 ## Security
 

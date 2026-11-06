@@ -23,17 +23,26 @@ function createProjects({ store, files, tokens }) {
         const name = v.text(payload?.name, 'Project name', { max: 60 });
         return store.update((s) => {
             if (s.projects.some((p) => p.name.toLowerCase() === name.toLowerCase())) throw new ValidationError(`There's already a project called ${name}.`);
-            const project = { id: newId(), name };
+            const project = { id: newId(), name, folders: [] };
             s.projects.push(project);
             return { id: project.id };
         });
     }
 
-    function updateProject(payload) {
+    /** Renames a project and/or sets its linked folders (where its repos live, for Claude). */
+    async function updateProject(payload) {
         const id = v.id(payload?.id, 'Project');
-        const name = v.text(payload?.name, 'Project name', { max: 60 });
+        const name = payload?.name !== undefined ? v.text(payload.name, 'Project name', { max: 60 }) : undefined;
+        const folders = payload?.folders !== undefined ? v.array(payload.folders, 'Folders', { max: 20, min: 0 }).map(folderPattern) : undefined;
         return store.update((s) => {
-            find(s.projects, id, 'project').name = name;
+            const project = find(s.projects, id, 'project');
+            if (name !== undefined) project.name = name;
+            if (folders !== undefined) {
+                const unique = [...new Set(folders)];
+                // A folder belongs to one project.
+                for (const p of s.projects) if (p !== project) p.folders = (p.folders ?? []).filter((f) => !unique.includes(f));
+                project.folders = unique;
+            }
             return { id };
         });
     }
@@ -90,6 +99,14 @@ function createProjects({ store, files, tokens }) {
     }
 
     return { createProject, updateProject, deleteProject, updateAccount, updateSettings };
+}
+
+/** A linked folder: `~/…` or an absolute path; `*` matches within one folder name. */
+function folderPattern(value) {
+    const text = v.text(value, 'Folder', { max: 300 }).replace(/(.)\/+$/, '$1');
+    if (!/^(~\/|\/)/.test(text) || /[\0\n\r]/.test(text)) throw new ValidationError(`${text}: use a full path, like ~/repos/acme-api or ~/repos/acme-*.`);
+    if (text === '/' || text === '~/' || /^~?\/\*?$/.test(text)) throw new ValidationError(`${text} is too broad: link the folders that hold this project's repos.`);
+    return text;
 }
 
 module.exports = { createProjects, ENV_COLORS };

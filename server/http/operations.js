@@ -5,7 +5,7 @@
  * one domain call; the domain validates its own input.
  */
 function createOperations(ctx) {
-    const { projects, profiles, portals, state, shell, notifier } = ctx;
+    const { projects, profiles, portals, state, shell, notifier, claude } = ctx;
     return {
         getState: () => state.compute(),
 
@@ -32,6 +32,12 @@ function createOperations(ctx) {
         listAccounts: portals.listAccounts,
 
         installShell: () => shell.install(),
+
+        // Claude Code: the toggle, and what its skill and hook ask (server/claude).
+        setClaudeSync: claude.setSync,
+        claudeContext: claude.context,
+        claudeHook: claude.hook,
+        claudeLink: claude.link,
         /** Shows a test alert. Waits a moment for a failure, not for the answer. */
         testNotification: async () => {
             const answer = notifier.prompt({

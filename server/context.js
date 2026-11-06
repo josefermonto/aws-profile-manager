@@ -17,6 +17,7 @@ const { createState } = require('./domain/state');
 const { createWatcher } = require('./watcher/watcher');
 const { createNotifier } = require('./watcher/notifier');
 const { createShellHelper } = require('./shell/shellHelper');
+const { createClaude } = require('./claude/claude');
 
 function createContext({
     env = process.env,
@@ -38,6 +39,7 @@ function createContext({
     ctx.profiles = createProfiles(ctx);
     ctx.portals = createPortals(ctx);
     ctx.state = createState(ctx);
+    ctx.claude = createClaude(ctx);
     ctx.watcher = createWatcher(ctx, { intervalMs: watcherInterval, log });
     return ctx;
 }

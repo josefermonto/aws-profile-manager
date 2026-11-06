@@ -1,5 +1,5 @@
 import { useMemo, useRef, useState, type ReactNode } from 'react';
-import { AlertTriangle, Check, ChevronDown, ChevronRight, ClipboardPaste, FolderPlus, Inbox, KeyRound, LogIn, LogOut, Pencil, Plus, Search, Trash2 } from 'lucide-react';
+import { AlertTriangle, Check, ChevronDown, ChevronRight, ClipboardPaste, Folder, FolderPlus, Inbox, KeyRound, LogIn, LogOut, Pencil, Plus, Search, Trash2 } from 'lucide-react';
 import { api } from '../api';
 import { useApp } from '../lib/appContext';
 import { liveState, timeOfDay } from '../lib/format';
@@ -192,7 +192,17 @@ function ProjectGroup({ project, portals, profiles, collapsed, onToggle }: { pro
     <tbody>
       <GroupHeader collapsed={collapsed} onToggle={onToggle}>
         <span className="text-sm font-semibold text-heading">{project.name}</span>
-        <span className="text-[0.6875rem] text-muted">{plural(profiles.length, 'profile')} · {plural(accounts, 'account')}</span>
+        <span className="text-[0.6875rem] text-muted">
+          {plural(profiles.length, 'profile')} · {plural(accounts, 'account')}
+          {project.folders.length > 0 && (
+            <>
+              {' · '}
+              <button className="hover:text-text hover:underline" title={`Claude sees these profiles in: ${project.folders.join(', ')}`} onClick={() => open({ kind: 'folders', projectId: project.id })}>
+                {plural(project.folders.length, 'folder')}
+              </button>
+            </>
+          )}
+        </span>
         {portals.map(p => <PortalStatus key={p.id} portal={p} />)}
         <span className="ml-auto flex items-center gap-1.5">
           <button className="btn" onClick={addSso}><KeyRound size={13} /> {portals.length ? 'Add SSO accounts' : 'Add SSO portal'}</button>
@@ -200,6 +210,7 @@ function ProjectGroup({ project, portals, profiles, collapsed, onToggle }: { pro
           <Menu
             items={[
               { label: 'Rename project', icon: <Pencil size={13} />, onClick: () => open({ kind: 'project', project }) },
+              { label: 'Folders for Claude', icon: <Folder size={13} />, onClick: () => open({ kind: 'folders', projectId: project.id }) },
               { label: 'Add another SSO portal', icon: <Plus size={13} />, onClick: () => open({ kind: 'portal', projectId: project.id, then: 'add-sso' }) },
               { label: 'Delete project', icon: <Trash2 size={13} />, onClick: confirmDelete, danger: true },
             ]}

@@ -9,10 +9,8 @@
  * since it was last written is a conflict: the write is refused unless forced.
  * Before each write the old file is copied to the backups directory.
  */
-const fs = require('node:fs/promises');
-const path = require('node:path');
 const ini = require('./ini');
-const { readText, writeAtomic, ensureDir, createLock } = require('./fsx');
+const { readText, writeAtomic, backupText, createLock } = require('./fsx');
 const { ConflictError } = require('./errors');
 
 const MAX_BACKUPS = 20;
@@ -96,15 +94,7 @@ function createAwsFiles({ paths, now = () => new Date() }) {
         return { config, credentials };
     }
 
-    async function backup(kind, text) {
-        await ensureDir(paths.backups);
-        const stamp = now().toISOString().replace(/[:.]/g, '-');
-        await writeAtomic(path.join(paths.backups, `${kind}.${stamp}.bak`), text);
-        const old = (await fs.readdir(paths.backups)).filter((f) => f.startsWith(`${kind}.`) && f.endsWith('.bak')).sort();
-        for (const f of old.slice(0, Math.max(0, old.length - MAX_BACKUPS))) {
-            await fs.rm(path.join(paths.backups, f), { force: true });
-        }
-    }
+    const backup = (kind, text) => backupText(paths.backups, kind, text, now(), MAX_BACKUPS);
 
     /**
      * Applies section edits: `{ file, section, patch?, replaces?, remove?, expect? }`.

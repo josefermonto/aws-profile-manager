@@ -16,6 +16,8 @@ export interface Status {
 export interface Project {
   id: string;
   name: string;
+  /** Where its repos live (`~/repos/acme-*`): Claude sees this project's profiles there. */
+  folders: string[];
 }
 
 export type LabelColor = 'red' | 'orange' | 'yellow' | 'green' | 'teal' | 'blue' | 'purple' | 'pink';
@@ -88,7 +90,7 @@ export interface UnmanagedProfile {
 
 export interface AppState {
   now: string;
-  settings: { warnMinutes: number; notifications: boolean };
+  settings: { warnMinutes: number; notifications: boolean; claudeSync: boolean };
   projects: Project[];
   accounts: Record<string, Account>;
   portals: Portal[];
@@ -97,6 +99,7 @@ export interface AppState {
   summary: { active: number; expiring: number; expired: number; attention: number };
   paths: { config: string; credentials: string; appHome: string; backups: string };
   shell: { scriptPath: string; zshrc: string; installed: boolean; sourceLine: string };
+  claude: { sync: boolean; skill: boolean; hook: boolean; skillFile: string; settingsFile: string; cli: string };
   port: number;
 }
 

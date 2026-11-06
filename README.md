@@ -7,6 +7,7 @@ One local UI for your AWS profiles across client projects, instead of hand-editi
 - **Pasted credentials.** Paste the portal's credentials block (or its environment-variable form). The keys are checked with AWS STS, then written to `~/.aws/credentials`.
 - **Status and expiry.** Every profile shows Active / Expiring / Expired / Signed out with time left, and a macOS alert with **Sign in again** (or **Paste new keys**) and **Ignore** pops up before a sign-in or keys expire, even with no browser tab open.
 - **Per-terminal switching.** `awspm use acme-prod-admin` sets `AWS_PROFILE` in that terminal only, with tab completion and a colored `[ACME PROD ADMIN]` prompt tag.
+- **Claude Code knows your profiles.** With **Sync with Claude** on, Claude Code asks the app which profile fits the repo it's working in, with live status, and a check stops risky AWS commands before they run.
 
 Design notes: [docs/superpowers/specs/2026-11-05-aws-profile-manager-design.md](docs/superpowers/specs/2026-11-05-aws-profile-manager-design.md).
 
@@ -45,6 +46,16 @@ Everything is on one page: one table of every profile, grouped by project. Each 
 - **Use a profile in a terminal.** *Settings → Terminal helper → Add to ~/.zshrc*, then in a new terminal: `awspm use <profile>`, `awspm ls`, `awspm off`, `awspm who`. Or use the **Use** button, which copies `export AWS_PROFILE=…`.
 
 **Deleting** a project deletes its profiles too. The confirmation lists them and asks whether to also remove them from `~/.aws` (checked by default, with a backup first); unchecked, the files aren't touched and the profiles show up as unmanaged. Deleting a project that way also removes its SSO portal, unless another project's profiles still use it.
+
+### With Claude Code
+
+**Sync with Claude** (top bar) sets up Claude Code, in the terminal or VS Code, to ask this app about profiles. Nothing about your profiles is copied into Claude's files: Claude asks each time, so a profile you add or remove, or a sign-in that expires, reaches it right away. Turning it on adds:
+
+- the skill `~/.claude/skills/aws-profiles`: before AWS work, Claude runs `~/.aws-profile-manager/bin/awspm-claude context` in the repo and gets the profiles of the project that folder is linked to (account, label, role, region, live status; never keys). It names the profile on every command;
+- a check that runs before each terminal command Claude runs (a `PreToolUse` hook). It **stops** commands that would show credentials (reading `~/.aws/credentials`, `aws configure export-credentials`, `sts assume-role` onto the screen…), AWS calls with no profile named, `aws configure set`, and profiles whose sign-in or keys have expired (with the link to fix it). It **asks you first** before changes in an account labeled Prod, and before using another project's profile in this folder;
+- in `~/.claude/settings.json`: that hook, and permission to run the context command without a prompt. The file is backed up to `~/.aws-profile-manager/backups/` first, and nothing else in it changes.
+
+Turning it off removes exactly those. **Link each project to its repo folders** (project menu → *Folders for Claude*; `~/repos/acme-*` covers every folder starting with `acme-`). In a folder that isn't linked, Claude only sees the project names and asks you which one it is, then links it. That way one client's accounts never show up while Claude works on another client's repo.
 
 ### Statuses
 
@@ -86,6 +97,7 @@ server/                 Node service (CommonJS, Jest)
   domain/               projects, profiles, portals, status rules, the UI snapshot
   watcher/              30 s loop: token refresh, plain-key renewal, STS checks, alerts
   shell/                the `awspm` zsh helper
+  claude/               Sync with Claude: the skill, the `awspm-claude` command and the command check (policy.js)
   http/                 request guards, POST /api operations, static UI
 frontend/               React 18 + Vite + Tailwind
 docs/superpowers/specs/ design

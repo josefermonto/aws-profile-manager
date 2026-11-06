@@ -77,4 +77,16 @@ function createLock() {
     };
 }
 
-module.exports = { readText, mtimeMs, ensureDir, writeAtomic, createLock, FILE_MODE, DIR_MODE };
+/**
+ * Copies `text` (a file's content before it's changed) to `<dir>/<kind>.<time>.bak`
+ * and keeps the newest `keep` copies of that kind.
+ */
+async function backupText(dir, kind, text, date, keep = 20) {
+    await ensureDir(dir);
+    const stamp = date.toISOString().replace(/[:.]/g, '-');
+    await writeAtomic(path.join(dir, `${kind}.${stamp}.bak`), text);
+    const old = (await fs.readdir(dir)).filter((f) => f.startsWith(`${kind}.`) && f.endsWith('.bak')).sort();
+    for (const f of old.slice(0, Math.max(0, old.length - keep))) await fs.rm(path.join(dir, f), { force: true });
+}
+
+module.exports = { readText, mtimeMs, ensureDir, writeAtomic, backupText, createLock, FILE_MODE, DIR_MODE };

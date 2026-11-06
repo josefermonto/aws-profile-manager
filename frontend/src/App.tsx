@@ -7,7 +7,7 @@ import { TopBar } from './components/Layout';
 import { AwsLogo } from './components/AwsLogo';
 import { Toasts } from './components/ui';
 import { ProfilesTable } from './components/ProfilesTable';
-import { ConfirmDialog, MoveDialog, NextStepDialog, ProjectDialog } from './dialogs/SimpleDialogs';
+import { ConfirmDialog, FoldersDialog, MoveDialog, NextStepDialog, ProjectDialog } from './dialogs/SimpleDialogs';
 import { AddSsoDialog, PortalDialog, SignInDialog } from './dialogs/SsoDialogs';
 import { PasteDialog } from './dialogs/PasteDialog';
 import { SettingsDialog } from './dialogs/SettingsDialog';
@@ -64,6 +64,8 @@ function ActiveDialog() {
       return <ProjectDialog project={dialog.project} />;
     case 'next':
       return <NextStepDialog projectId={dialog.projectId} />;
+    case 'folders':
+      return <FoldersDialog key={dialog.projectId} projectId={dialog.projectId} />;
     case 'portal':
       return <PortalDialog portal={dialog.portal} projectId={dialog.projectId} then={dialog.then} />;
     case 'sign-in':
