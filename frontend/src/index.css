@@ -3,7 +3,7 @@
 @tailwind utilities;
 
 /*
- * AWS Cloudscape-inspired tokens, shared with connect-inspector.
+ * AWS Cloudscape-inspired tokens.
  * Status colors (success/warning/danger) mean state and show as soft pills with
  * a dot; environment colors (--env-*) are vivid solid badges, so a red Prod tag
  * never reads as "expired".

@@ -19,7 +19,7 @@ One local UI to manage AWS profiles across client projects, so nobody edits `~/.
 | 2 | How it runs | **launchd agent** that starts at login: one Node process serving UI + API on `127.0.0.1:5005`, watching expiry, sending notifications. `npm start` for development. |
 | 3 | What "switch" means | **Per terminal.** `awspm use <profile>` (zsh function with completion) sets `AWS_PROFILE` in that shell; the UI copies `export AWS_PROFILE=…`. A colored prompt tag (e.g. `[ACME PROD]`) shows the active profile. `[default]` is never touched. |
 | 4 | Ownership of `~/.aws` | **Adopted profiles only.** The app rewrites only the sections it manages; everything else is preserved byte for byte. First-run import lets you adopt existing profiles one by one. (Full ownership may come later.) |
-| 5 | SSO sign-in mechanism | **The app runs the device-code sign-in itself** (ported from connect-inspector's `ssoService`) and writes the token to `~/.aws/sso/cache` in the format the CLI and SDKs read. Works when the link is approved in another browser or an AWS WorkSpace. |
+| 5 | SSO sign-in mechanism | **The app runs the device-code sign-in itself** and writes the token to `~/.aws/sso/cache` in the format the CLI and SDKs read. Works when the link is approved in another browser or an AWS WorkSpace. |
 
 ## Architecture
 
@@ -32,7 +32,7 @@ awspm (zsh) ─┘  Node 22, launchd, 127.0.0.1:5005 ├─ ~/.aws-profile-manag
 
 AWS tools (CLI, CDK, boto3, JS SDK) read `~/.aws` directly and never talk to the service. If it's stopped, SSO profiles keep working until the sign-in ends; only alerts and plain-key renewal pause.
 
-Repo layout follows connect-inspector: npm workspaces `server/` (CommonJS, Jest) and `frontend/` (React 18, Vite, Tailwind, lucide-react), same Cloudscape-style tokens and light/dark theme. The API keeps the reference repos' style (`POST /api` with `{ operation, payload }`), but without Lambda-shaped handlers, since this never deploys to AWS.
+Repo layout: npm workspaces `server/` (CommonJS, Jest) and `frontend/` (React 18, Vite, Tailwind, lucide-react), with Cloudscape-style tokens and a light/dark theme. The API is one endpoint, `POST /api` with `{ operation, payload }`.
 
 ### Server modules
 
@@ -42,9 +42,9 @@ Repo layout follows connect-inspector: npm workspaces `server/` (CommonJS, Jest)
 | `core/ini.js` | Section-preserving INI model: parse to ordered sections of raw lines, read key/values, replace/append/remove one section, serialize unchanged sections verbatim. |
 | `core/awsFiles.js` | Lists every profile in both files; applies section edits with backup → temp file → rename, mode `600`; per-section fingerprints for outside-edit detection. |
 | `core/store.js` | `~/.aws-profile-manager/store.json` (mode `600`): projects, account labels, portals, profile metadata, settings. **No secrets.** |
-| `sso/ssoService.js` | Device sign-in, account/role listing, role credentials, region discovery (ported), plus refresh-token support. |
+| `sso/ssoService.js` | Device sign-in, account/role listing, role credentials, region discovery, plus refresh-token support. |
 | `sso/tokenCache.js` | Read/write `~/.aws/sso/cache/<sha1(sessionName)>.json` (`startUrl, region, accessToken, expiresAt, clientId, clientSecret, registrationExpiresAt, refreshToken`). |
-| `creds/parseCreds.js` | Parses a pasted credentials block (port of connect-inspector's parser). Reads `[123456789012_RoleName]` headers from the portal's block. |
+| `creds/parseCreds.js` | Parses a pasted credentials block. Reads `[123456789012_RoleName]` headers from the portal's block. |
 | `creds/sts.js` | `GetCallerIdentity` check for pasted keys. |
 | `status/status.js` | Pure: profile + portal + token cache + now → status. |
 | `status/watcher.js` | Every 30 s: refresh SSO tokens, renew plain keys, probe pasted keys, fire notifications, write `profiles.tsv`. |
@@ -158,7 +158,7 @@ One page, no navigation:
 ## Error handling
 
 - **Outside edits:** each managed section's fingerprint is compared before writing. If it changed, the profile shows "changed outside AWS Profile Manager" and the write is refused until you choose **Use file version** (re-read metadata, accept) or **Overwrite**.
-- **Sign-in:** code expired / denied / slow-down handled as in connect-inspector; refresh failure marks the portal expired and notifies.
+- **Sign-in:** code expired / denied / slow-down handled; refresh failure marks the portal expired and notifies.
 - **STS check:** `ExpiredToken*` → expired; `InvalidClientTokenId`/`SignatureDoesNotMatch` → error ("keys invalid"); network errors keep the previous status and retry next tick.
 - **Port in use:** the service exits with "already running? `npm run service:status`".
 

@@ -5,7 +5,7 @@ const square = (size: number) => ({ width: size, height: size });
 
 /**
  * The AWS logo: dark lettering in the light theme, the navy tile in the dark
- * one (the same pattern as connect-inspector). `tile` always shows the navy
+ * one. `tile` always shows the navy
  * tile, for surfaces that are dark in both themes, like the top bar.
  */
 export function AwsLogo({ size = 16, tile = false, className = '' }: { size?: number; tile?: boolean; className?: string }) {

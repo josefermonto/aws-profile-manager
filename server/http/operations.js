@@ -1,9 +1,8 @@
 'use strict';
 
 /**
- * The API: `POST /api` with `{ operation, payload }`, the same shape as the
- * connect-inspector and connect-ai-manager APIs. Each operation maps to one
- * domain call; the domain validates its own input.
+ * The API: `POST /api` with `{ operation, payload }`. Each operation maps to
+ * one domain call; the domain validates its own input.
  */
 function createOperations(ctx) {
     const { projects, profiles, portals, state, shell, notifier } = ctx;

@@ -3,7 +3,7 @@
 const { detectLifetime, defaultLifetime, lifetimeKey, snapLifetime } = require('./expiry');
 
 const HOUR = 3600e3;
-const SSO_ARN = 'arn:aws:sts::111122223333:assumed-role/AWSReservedSSO_PowerUserAccess_0123456789abcdef/me@x.com';
+const SSO_ARN = 'arn:aws:sts::111122223333:assumed-role/AWSReservedSSO_PowerUserAccess_0123456789abcdef/me@example.com';
 const ok = (arn) => ({ ok: true, accountId: '111122223333', arn });
 
 describe('pasted-key lifetimes', () => {

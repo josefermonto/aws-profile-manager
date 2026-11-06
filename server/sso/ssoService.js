@@ -1,8 +1,7 @@
 'use strict';
 
 /**
- * AWS IAM Identity Center (SSO) calls, ported from connect-inspector's
- * sso_api/ssoService.js. Uses the OAuth device authorization flow, so the
+ * AWS IAM Identity Center (SSO) calls. Uses the OAuth device authorization flow, so the
  * sign-in link can be approved in any browser (another one, or an AWS
  * WorkSpace), not only on this Mac:
  *
@@ -13,7 +12,7 @@
  *   4. With the token: list accounts and roles, get role credentials, and
  *      refresh the token before it expires.
  *
- * Unlike connect-inspector, tokens never go to the browser: the caller writes
+ * Tokens never go to the browser: the caller writes
  * them to the CLI's token cache. Token and credential values are never logged.
  */
 const { randomUUID } = require('node:crypto');

@@ -37,7 +37,7 @@ export function PortalDialog({ portal, projectId: contextProject, then }: { port
     return candidate;
   })();
 
-  // The SSO region fills itself in from the portal once a portal URL is pasted (as in connect-inspector).
+  // The SSO region fills itself in from the portal once a portal URL is pasted.
   useEffect(() => {
     if (!PORTAL_URL_RE.test(url) || url === portal?.startUrl) {
       setDiscovery('idle');

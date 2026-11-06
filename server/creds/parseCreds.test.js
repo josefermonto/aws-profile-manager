@@ -39,7 +39,7 @@ aws_session_token=IQoJb3JpZ2luX2VjE...==`);
 
 describe('principalName', () => {
     test.each([
-        ['arn:aws:sts::111122223333:assumed-role/AWSReservedSSO_PowerUserAccess_0123456789abcdef/me@x.com', 'PowerUserAccess'],
+        ['arn:aws:sts::111122223333:assumed-role/AWSReservedSSO_PowerUserAccess_0123456789abcdef/me@example.com', 'PowerUserAccess'],
         ['arn:aws:sts::111122223333:assumed-role/deploy-role/session', 'deploy-role'],
         ['arn:aws:iam::111122223333:user/ci', 'user/ci'],
         [undefined, null],

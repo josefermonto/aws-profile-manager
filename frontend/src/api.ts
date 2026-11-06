@@ -7,7 +7,7 @@ export class ApiError extends Error {
   }
 }
 
-/** POST /api { operation, payload }, the same API shape as connect-inspector. */
+/** POST /api { operation, payload }: the one API endpoint. */
 export async function call<T = unknown>(operation: string, payload: unknown = {}): Promise<T> {
   let res: Response;
   try {

@@ -12,8 +12,8 @@
  *   set AWS_ACCESS_KEY_ID=ASIA…               ← Windows cmd
  *   $Env:AWS_ACCESS_KEY_ID="ASIA…"            ← PowerShell
  *
- * Ported from connect-inspector's frontend parser; runs on the server here so
- * the keys go from the paste box straight to ~/.aws/credentials.
+ * Runs on the server, so the keys go from the paste box straight to
+ * ~/.aws/credentials.
  */
 const KEY_MAP = {
     aws_access_key_id: 'accessKeyId',

@@ -81,13 +81,13 @@ server/                 Node service (CommonJS, Jest)
   index.js              entry: HTTP server + watcher
   service.js            launchd install / uninstall / status / restart
   core/                 paths, section-preserving INI editor, ~/.aws file access, store, validation
-  sso/                  IAM Identity Center sign-in (ported from connect-inspector) and the CLI token cache
+  sso/                  IAM Identity Center sign-in and the CLI token cache
   creds/                pasted-credentials parser, STS check
   domain/               projects, profiles, portals, status rules, the UI snapshot
   watcher/              30 s loop: token refresh, plain-key renewal, STS checks, alerts
   shell/                the `awspm` zsh helper
   http/                 request guards, POST /api operations, static UI
-frontend/               React 18 + Vite + Tailwind (same tokens and theme toggle as connect-inspector)
+frontend/               React 18 + Vite + Tailwind
 docs/superpowers/specs/ design
 ```
 
