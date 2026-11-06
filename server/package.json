@@ -1,0 +1,26 @@
+{
+  "name": "aws-profile-manager-server",
+  "version": "0.1.0",
+  "private": true,
+  "description": "AWS Profile Manager service: local API, ~/.aws file management, SSO sign-in and expiry watcher",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "start": "node index.js",
+    "dev": "PROFILE_MANAGER_DEV=1 node --watch index.js",
+    "test": "jest"
+  },
+  "dependencies": {
+    "@aws-sdk/client-iam": "3.1107.0",
+    "@aws-sdk/client-sso": "3.1107.0",
+    "@aws-sdk/client-sso-oidc": "3.1107.0",
+    "@aws-sdk/client-sts": "3.1107.0"
+  },
+  "devDependencies": {
+    "jest": "^29.7.0"
+  },
+  "jest": {
+    "testEnvironment": "node"
+  }
+}

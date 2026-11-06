@@ -1,0 +1,26 @@
+{
+  "name": "aws-profile-manager",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Manage AWS profiles, SSO sign-ins and credentials across client projects from one local UI",
+  "engines": {
+    "node": ">=22"
+  },
+  "workspaces": [
+    "server",
+    "frontend"
+  ],
+  "scripts": {
+    "start": "concurrently -k -n api,web -c blue,green \"npm run dev -w server\" \"npm run dev -w frontend\"",
+    "build": "npm run build -w frontend",
+    "test": "npm test -w server",
+    "typecheck": "npm run typecheck -w frontend",
+    "service:install": "npm run build && node server/service.js install",
+    "service:uninstall": "node server/service.js uninstall",
+    "service:status": "node server/service.js status",
+    "service:restart": "node server/service.js restart"
+  },
+  "devDependencies": {
+    "concurrently": "^9.2.1"
+  }
+}

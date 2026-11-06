@@ -1,0 +1,144 @@
+import { useState, type ReactNode } from 'react';
+import { ChevronRight, ClipboardPaste, KeyRound, Loader2 } from 'lucide-react';
+import { api } from '../api';
+import { useApp, type Dialog } from '../lib/appContext';
+import { ErrorText, Hint, Modal, ProjectSelect } from '../components/ui';
+import { useSubmit } from './useSubmit';
+import type { Project } from '../types';
+
+export function ProjectDialog({ project }: { project?: Project }) {
+  const { close, open } = useApp();
+  const [name, setName] = useState(project?.name ?? '');
+  const { busy, error, submit } = useSubmit();
+  const save = async () => {
+    if (project) {
+      if ((await submit(() => api.updateProject(project.id, name))) !== undefined) close();
+      return;
+    }
+    // A new project goes straight on to its first profiles.
+    const created = await submit(() => api.createProject(name));
+    if (created) open({ kind: 'next', projectId: created.id });
+  };
+  return (
+    <Modal
+      title={project ? 'Rename project' : 'New project'}
+      onClose={close}
+      footer={<><button className="btn" onClick={close}>Cancel</button><button className="btn-primary" disabled={!name.trim() || busy} onClick={() => void save()}>{project ? 'Save' : 'Create project'}</button></>}
+    >
+      <label className="field-label" htmlFor="project-name">Project or client name</label>
+      <input id="project-name" autoFocus value={name} onChange={e => setName(e.target.value)} onKeyDown={e => e.key === 'Enter' && name.trim() && void save()} className="field" placeholder="Acme" />
+      <Hint>Used in suggested profile names (acme-prod-admin) and the terminal prompt tag.</Hint>
+      <ErrorText>{error}</ErrorText>
+    </Modal>
+  );
+}
+
+/** Right after a project is created: how to add its profiles. */
+export function NextStepDialog({ projectId }: { projectId: string }) {
+  const { state, open, close } = useApp();
+  const project = state.projects.find(p => p.id === projectId);
+  if (!project) return null;
+  return (
+    <Modal title={`${project.name} created`} onClose={close} footer={<button className="btn" onClick={close}>Later</button>}>
+      <p className="mb-3 text-sm text-muted">How do you want to add its profiles?</p>
+      <div className="space-y-2">
+        <Choice
+          icon={<KeyRound size={18} />}
+          title="Sign in with SSO"
+          text={`Add ${project.name}'s access portal URL, sign in once, and add all its accounts and roles in one go.`}
+          recommended
+          onClick={() => open({ kind: 'portal', projectId, then: 'add-sso' })}
+        />
+        <Choice
+          icon={<ClipboardPaste size={18} />}
+          title="Paste keys"
+          text="Paste the keys from the access portal, or any credentials block. They're checked with AWS before they're saved."
+          onClick={() => open({ kind: 'paste', projectId })}
+        />
+      </div>
+    </Modal>
+  );
+}
+
+function Choice({ icon, title, text, onClick, recommended = false }: { icon: ReactNode; title: string; text: string; onClick: () => void; recommended?: boolean }) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className="group flex w-full items-center gap-3 rounded-lg border border-border bg-surface px-4 py-3 text-left transition-colors hover:border-primary hover:bg-surface-hover"
+    >
+      <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-primary-soft text-primary-soft-text">{icon}</span>
+      <span className="min-w-0 flex-1">
+        <span className="flex items-center gap-2 text-sm font-semibold text-heading">
+          {title}
+          {recommended && <span className="rounded-full bg-success-bg px-1.5 py-px text-[0.625rem] font-semibold text-success">Recommended</span>}
+        </span>
+        <span className="mt-0.5 block text-xs text-muted">{text}</span>
+      </span>
+      <ChevronRight size={16} className="shrink-0 text-faint transition-transform group-hover:translate-x-0.5 group-hover:text-primary" />
+    </button>
+  );
+}
+
+export function ConfirmDialog({ title, body, confirmLabel, danger, option, onConfirm }: Extract<Dialog, { kind: 'confirm' }>) {
+  const { close, toast } = useApp();
+  const { busy, error, submit } = useSubmit();
+  const [checked, setChecked] = useState(option?.defaultChecked ?? false);
+  const confirm = async () => {
+    const r = await submit(async () => {
+      await onConfirm(checked);
+      return true;
+    });
+    if (r) {
+      close();
+      toast('Done.');
+    }
+  };
+  return (
+    <Modal
+      title={title}
+      onClose={close}
+      footer={
+        <>
+          <button className="btn" onClick={close}>Cancel</button>
+          <button className={danger ? 'btn-danger' : 'btn-primary'} disabled={busy} onClick={() => void confirm()}>
+            {busy && <Loader2 size={13} className="animate-spin" />} {confirmLabel}
+          </button>
+        </>
+      }
+    >
+      <div className="text-sm leading-relaxed text-text">{body as ReactNode}</div>
+      {option && (
+        <label className="mt-4 flex items-start gap-2 rounded-md border border-border bg-surface-alt px-3 py-2.5 text-sm">
+          <input type="checkbox" className="mt-1" checked={checked} onChange={e => setChecked(e.target.checked)} />
+          <span>{option.label}</span>
+        </label>
+      )}
+      <ErrorText>{error}</ErrorText>
+    </Modal>
+  );
+}
+
+/** Moves a profile to another project. Nothing in ~/.aws changes. */
+export function MoveDialog({ profileId }: { profileId: string }) {
+  const { state, close } = useApp();
+  const profile = state.profiles.find(p => p.id === profileId);
+  const [projectId, setProjectId] = useState(profile?.projectId ?? '');
+  const { busy, error, submit } = useSubmit();
+  if (!profile) return null;
+  const move = async () => {
+    if ((await submit(() => api.updateProfile({ id: profileId, projectId }))) !== undefined) close();
+  };
+  return (
+    <Modal
+      title={<>Move <span className="font-mono">{profile.name}</span></>}
+      onClose={close}
+      footer={<><button className="btn" onClick={close}>Cancel</button><button className="btn-primary" disabled={busy || projectId === profile.projectId} onClick={() => void move()}>Move</button></>}
+    >
+      <label className="field-label" htmlFor="move-project">To project</label>
+      <ProjectSelect id="move-project" value={projectId} onChange={setProjectId} />
+      <Hint>Only changes where it's listed here. The profile in ~/.aws stays exactly the same.</Hint>
+      <ErrorText>{error}</ErrorText>
+    </Modal>
+  );
+}

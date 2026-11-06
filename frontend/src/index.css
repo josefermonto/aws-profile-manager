@@ -1,0 +1,187 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/*
+ * AWS Cloudscape-inspired tokens, shared with connect-inspector.
+ * Status colors (success/warning/danger) mean state and show as soft pills with
+ * a dot; environment colors (--env-*) are vivid solid badges, so a red Prod tag
+ * never reads as "expired".
+ */
+:root,
+:root[data-theme='light'] {
+  color-scheme: light;
+
+  --color-bg: #f2f3f3;
+  --color-surface: #ffffff;
+  --color-surface-alt: #fafafa;
+  --color-surface-hover: #f2f8fd;
+  --color-border: #e9ebed;
+  --color-border-strong: #b6bec9;
+  --color-heading: #0f141a;
+  --color-text: #16191f;
+  --color-text-muted: #5f6b7a;
+  --color-text-faint: #8c96a3;
+  --color-primary: #0972d3;
+  --color-primary-hover: #065299;
+  --color-on-primary: #ffffff;
+  --color-primary-soft: #e8f2fc;
+  --color-primary-soft-text: #0a4a8a;
+  --color-link: #0972d3;
+  --color-success: #037f0c;
+  --color-success-bg: #f2fcf3;
+  --color-success-border: #b5dfb9;
+  --color-danger: #d91515;
+  --color-danger-hover: #ba2d2d;
+  --color-danger-bg: #fff7f7;
+  --color-danger-border: #f5c2c2;
+  --color-warning: #8d6605;
+  --color-warning-bg: #fffce9;
+  --color-warning-border: #eedc9f;
+  --color-nav-bg: #232f3e;
+  --color-nav-text: #ffffff;
+  --color-nav-muted: #aab7c4;
+  --color-nav-border: #414d5c;
+  --color-focus: #0972d3;
+
+  /* Environment colors: vivid fills with a readable text color on top (--env-*-on). */
+  --env-red: #dc2626;    --env-red-on: #ffffff;
+  --env-orange: #ea580c; --env-orange-on: #ffffff;
+  --env-yellow: #facc15; --env-yellow-on: #422006;
+  --env-green: #16a34a;  --env-green-on: #ffffff;
+  --env-teal: #0d9488;   --env-teal-on: #ffffff;
+  --env-blue: #2563eb;   --env-blue-on: #ffffff;
+  --env-purple: #9333ea; --env-purple-on: #ffffff;
+  --env-pink: #db2777;   --env-pink-on: #ffffff;
+
+  --shadow-card: 0 1px 4px -1px rgba(0, 7, 22, 0.12);
+  --shadow-pop: 0 4px 20px rgba(0, 7, 22, 0.2);
+  --scroll-thumb: #c6ccd4;
+  --scroll-thumb-hover: #a7afba;
+}
+
+:root[data-theme='dark'] {
+  color-scheme: dark;
+
+  --color-bg: #0f1b2a;
+  --color-surface: #1a2634;
+  --color-surface-alt: #202b3a;
+  --color-surface-hover: #223349;
+  --color-border: #2d3d4f;
+  --color-border-strong: #48586b;
+  --color-heading: #ffffff;
+  --color-text: #e4e7ea;
+  --color-text-muted: #94a3b4;
+  --color-text-faint: #6b7b8e;
+  --color-primary: #1f6feb;
+  --color-primary-hover: #388bfd;
+  --color-on-primary: #ffffff;
+  --color-primary-soft: #182c47;
+  --color-primary-soft-text: #9cc7ff;
+  --color-link: #6cb6ff;
+  --color-success: #4ec9b0;
+  --color-success-bg: #12261f;
+  --color-success-border: #24503f;
+  --color-danger: #ff7b72;
+  --color-danger-hover: #ff9b93;
+  --color-danger-bg: #2a1615;
+  --color-danger-border: #5a2a27;
+  --color-warning: #e3b341;
+  --color-warning-bg: #241f10;
+  --color-warning-border: #4d4220;
+  --color-nav-bg: #0a141f;
+  --color-nav-text: #ffffff;
+  --color-nav-muted: #94a3b4;
+  --color-nav-border: #21313f;
+  --color-focus: #388bfd;
+
+  --env-red: #ef4444;    --env-red-on: #ffffff;
+  --env-orange: #f97316; --env-orange-on: #1c0a00;
+  --env-yellow: #facc15; --env-yellow-on: #422006;
+  --env-green: #22c55e;  --env-green-on: #052e16;
+  --env-teal: #14b8a6;   --env-teal-on: #042f2e;
+  --env-blue: #3b82f6;   --env-blue-on: #ffffff;
+  --env-purple: #a855f7; --env-purple-on: #ffffff;
+  --env-pink: #ec4899;   --env-pink-on: #ffffff;
+
+  --shadow-card: 0 1px 4px -1px rgba(0, 0, 0, 0.5);
+  --shadow-pop: 0 6px 24px rgba(0, 0, 0, 0.55);
+  --scroll-thumb: #3a4a5c;
+  --scroll-thumb-hover: #4c5e72;
+}
+
+/* A compact base size: every rem-based size (text and spacing) follows it. */
+html {
+  font-size: 15px;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+  height: 100vh;
+  overflow: hidden;
+}
+
+body {
+  @apply bg-bg text-text;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+#root {
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+::-webkit-scrollbar { width: 10px; height: 10px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb {
+  background: var(--scroll-thumb);
+  border-radius: 6px;
+  border: 2px solid transparent;
+  background-clip: content-box;
+}
+::-webkit-scrollbar-thumb:hover { background: var(--scroll-thumb-hover); background-clip: content-box; }
+
+select option { background: var(--color-surface); color: var(--color-text); }
+
+@keyframes pulse-dot { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }
+.pulse-dot { animation: pulse-dot 1.2s ease-in-out infinite; }
+
+@keyframes ci-fade-in { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
+.ci-fade-in { animation: ci-fade-in 0.18s ease-out; }
+
+@keyframes ci-scale-in { from { opacity: 0; transform: scale(0.97); } to { opacity: 1; transform: scale(1); } }
+.ci-scale-in { animation: ci-scale-in 0.16s cubic-bezier(0.16, 1, 0.3, 1); }
+
+@layer components {
+  .btn {
+    @apply inline-flex whitespace-nowrap items-center justify-center gap-1.5 rounded-md border border-border-strong bg-surface px-3 py-1.5
+      text-xs font-semibold text-text transition-colors hover:bg-surface-hover disabled:cursor-not-allowed disabled:opacity-50;
+  }
+  .btn-primary {
+    @apply inline-flex whitespace-nowrap items-center justify-center gap-1.5 rounded-md bg-primary px-3 py-1.5 text-xs font-semibold
+      text-on-primary transition-colors hover:bg-primary-hover disabled:cursor-not-allowed disabled:opacity-50;
+  }
+  .btn-danger {
+    @apply inline-flex whitespace-nowrap items-center justify-center gap-1.5 rounded-md bg-danger px-3 py-1.5 text-xs font-semibold
+      text-white transition-colors hover:bg-danger-hover disabled:cursor-not-allowed disabled:opacity-50;
+  }
+  .btn-ghost {
+    @apply inline-flex items-center justify-center gap-1.5 rounded-md px-2 py-1.5 text-xs font-semibold text-muted
+      transition-colors hover:bg-surface-hover hover:text-text disabled:cursor-not-allowed disabled:opacity-50;
+  }
+  .field {
+    @apply h-9 w-full rounded-md border border-border-strong bg-surface px-3 text-sm text-text placeholder-muted
+      transition-shadow focus:border-focus focus:outline-none focus:ring-1 focus:ring-focus disabled:opacity-60;
+  }
+  .field-label {
+    @apply mb-1.5 block text-xs font-semibold text-text;
+  }
+  .card {
+    @apply rounded-lg border border-border bg-surface shadow-card;
+  }
+}
